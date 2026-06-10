@@ -1,0 +1,19 @@
+name: Cloud Branch Protection Gateway
+
+on:
+  push:
+    branches:
+      - main
+      - Version-5.0.0.1
+      - Version_5.0.6
+      - Version-5.0.0.2
+
+jobs:
+  block-direct-push:
+    runs-on: [self-hosted, Linux, X64]
+    steps:
+      - name: Dynamic Push Protection
+        run: |
+          echo "🛑 [ACCESS DENIED] Direct push to '${{ github.ref_name }}' branch is blocked!"
+          echo "💡 Free Private Repositories bypass using Public Runner Strategy."
+          exit 1
