@@ -1,19 +1,16 @@
 name: Cloud Branch Protection Gateway
 
 on:
-  push:
-    branches:
-      - main
-      - Version-5.0.0.1
-      - Version_5.0.6
-      - Version-5.0.0.2
+  repository_dispatch:
+    types: [block_private_push]
 
 jobs:
   block-direct-push:
+    # এটি চলবে তোমার হাগিং ফেসের সচল রানারে
     runs-on: [self-hosted, Linux, X64]
     steps:
-      - name: Dynamic Push Protection
+      - name: Execute Remote Protection
         run: |
-          echo "🛑 [ACCESS DENIED] Direct push to '${{ github.ref_name }}' branch is blocked!"
-          echo "💡 Free Private Repositories bypass using Public Runner Strategy."
+          echo "🛑 [ACCESS DENIED] Direct push to '${{ github.event.client_payload.branch }}' branch is blocked on 'somiti' Private Repository!"
+          echo "💡 Powered by NoveMixs Cloud Runner Strategy via Hugging Face."
           exit 1
