@@ -1,16 +1,34 @@
-name: Cloud Branch Protection Gateway
+name: Cloud Branch Protection & Dynamic Ping Gateway
 
 on:
   repository_dispatch:
     types: [block_private_push]
+  push:
+    branches:
+      - main  # তুমি ম্যানুয়ালি একবার পুশ করলেই ব্যাকগ্রাউন্ড পিং চালু হয়ে যাবে
 
 jobs:
   block-direct-push:
-    # এটি চলবে তোমার হাগিং ফেসের সচল রানারে
     runs-on: [self-hosted, Linux, X64]
     steps:
       - name: Execute Remote Protection
+        if: github.event_name == 'repository_dispatch'
         run: |
           echo "🛑 [ACCESS DENIED] Direct push to '${{ github.event.client_payload.branch }}' branch is blocked on 'somiti' Private Repository!"
           echo "💡 Powered by NoveMixs Cloud Runner Strategy via Hugging Face."
           exit 1
+
+  persistent-ping-service:
+    runs-on: [self-hosted, Linux, X64]
+    if: github.event_name == 'push'
+    steps:
+      - name: Infinite 5-Minute Ping Loop
+        run: |
+          echo "🚀 Starting Persistent Ping Service for novemixs.qzz.io..."
+          # ব্যাকগ্রাউন্ডে অনন্ত লুপ চালানো যা প্রতি ৩০০ সেকেন্ড (৫ মিনিট) পর পর পিং করবে
+          while true; do
+            echo "⏰ Ping Triggered at: $(date)"
+            ping -c 4 novemixs.qzz.io || curl -sI https://novemixs.qzz.io | head -n 1
+            echo "💤 Sleeping for 5 minutes..."
+            sleep 300
+          done
