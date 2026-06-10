@@ -1,34 +1,36 @@
-name: Cloud Branch Protection & Dynamic Ping Gateway
+name: Cloud Protection & Scheduled Ping Gateway
 
 on:
   repository_dispatch:
     types: [block_private_push]
+  schedule:
+    # এটি গিটহাবকে বলবে প্রতি ৫ মিনিট পর পর নিজে থেকে এই রানারকে ট্রিগার করতে
+    - cron: '*/5 * * * *'
   push:
     branches:
-      - main  # তুমি ম্যানুয়ালি একবার পুশ করলেই ব্যাকগ্রাউন্ড পিং চালু হয়ে যাবে
+      - main
 
 jobs:
   block-direct-push:
+    if: github.event_name == 'repository_dispatch'
     runs-on: [self-hosted, Linux, X64]
     steps:
       - name: Execute Remote Protection
-        if: github.event_name == 'repository_dispatch'
         run: |
-          echo "🛑 [ACCESS DENIED] Direct push to '${{ github.event.client_payload.branch }}' branch is blocked on 'somiti' Private Repository!"
-          echo "💡 Powered by NoveMixs Cloud Runner Strategy via Hugging Face."
+          echo "🛑 [ACCESS DENIED] Direct push is blocked!"
           exit 1
 
-  persistent-ping-service:
+  scheduled-ping-service:
+    # এই জবটি শিডিউল অথবা ম্যানুয়াল পুশের সময় রান হবে
+    if: github.event_name == 'schedule' || github.event_name == 'push'
     runs-on: [self-hosted, Linux, X64]
-    if: github.event_name == 'push'
     steps:
-      - name: Infinite 5-Minute Ping Loop
+      - name: Run Diagnostics Ping
         run: |
-          echo "🚀 Starting Persistent Ping Service for novemixs.qzz.io..."
-          # ব্যাকগ্রাউন্ডে অনন্ত লুপ চালানো যা প্রতি ৩০০ সেকেন্ড (৫ মিনিট) পর পর পিং করবে
-          while true; do
-            echo "⏰ Ping Triggered at: $(date)"
-            ping -c 4 novemixs.qzz.io || curl -sI https://novemixs.qzz.io | head -n 1
-            echo "💤 Sleeping for 5 minutes..."
-            sleep 300
-          done
+          echo "🚀 Triggering official ping for novemixs.qzz.io..."
+          echo "📅 Execution Time: $(date)"
+          
+          # একবার জাস্ট ৪টি পিং প্যাকেজ পাঠিয়ে প্রসেসটি সাকসেসফুলি ক্লোজ হবে
+          ping -c 4 novemixs.qzz.io || curl -sI https://novemixs.qzz.io | head -n 1
+          
+          echo "✅ Job completed successfully. No long-running freeze."
